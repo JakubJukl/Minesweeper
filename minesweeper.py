@@ -32,6 +32,7 @@ class Minesweeper():
         # At first, player has found no mines
         self.mines_found = set()
 
+    
     def print(self):
         """
         Prints a text-based representation
@@ -145,11 +146,12 @@ class MinesweeperAI():
     Minesweeper game player
     """
 
-    def __init__(self, height=8, width=8):
+    def __init__(self, height=8, width=8, number_mines=8):
 
-        # Set initial height and width
+        # Set initial height and width, number of mines on the playfield
         self.height = height
         self.width = width
+        self.number_mines = number_mines
 
         # Keep track of which cells have been clicked on
         self.moves_made = set()
@@ -160,6 +162,23 @@ class MinesweeperAI():
 
         # List of sentences about the game known to be true
         self.knowledge = []
+        
+        """
+        If we presume, that our agent is well informed, he has to 
+        know how many mines are there. If he shouldn't be that well 
+        informed, we can just comment it out. It just makes one huge 
+        sentence of all cells in the field and there has to be exactly 
+        'x' mines in them.  
+        BTW: The AI takes huge performance hit in certain situations, 
+        since it can have 70+ subsets (sentences) in midgame.
+        Creates board, so the ai can compute random moves efficiently.
+        """
+        self.board = set()
+        for i in range(self.height):
+            for j in range(self.width):
+                self.board.add((i,j))
+        self.knowledge.append(Sentence(self.board,self.number_mines))
+               
 
 
     def mark_mine(self, cell):
@@ -217,7 +236,7 @@ class MinesweeperAI():
             #add sentence about neighboring cells
             self.knowledge.append(Sentence(neighboring,count))
             self.update_knowledge()
-
+        self.print_sentences()
 
                                 
     def update_knowledge(self):
@@ -301,7 +320,53 @@ class MinesweeperAI():
                 return 1
         return 0
 
+    def print_empty_sentences(self):
+        a = 0
+        for sentence in self.knowledge:
+            if len(sentence.cells) < 1:
+                a+=1
+                print(a,". prazdna veta ")
 
+        
+    def print_sentences(self):
+        a = 0
+        for sentence in self.knowledge:
+            a+=1
+            print(a,". veta je: ")
+            print("pocet je... ",sentence.count)
+            for cell in sentence.cells:           
+                print("y=",cell[0]," x=",cell[1])
+    
+    def print_number_duplicate_sentences(self):
+        for sentence in self.knowledge:
+            a = -1
+            for duplicate in self.knowledge:
+                if sentence == duplicate:
+                    a+=1
+            if a > 0:
+                print("veta: ",sentence," se nachazi ",a)
+    
+    def print_mines(self):
+        print("miny jsou: ")
+        for cell in self.mines:           
+            print("y=",cell[0]," x=",cell[1])
+            
+    def print_safes(self):
+        print("safe jsou: ")
+        for cell in self.safes:           
+            print("y=",cell[0]," x=",cell[1])
+            
+    def print_possible_safes(self):
+        print("mozne safe pohyby jsou: ")
+        for cell in self.safes: 
+            if not cell in self.moves_made:
+                print("y=",cell[0]," x=",cell[1])
+                
+    def find_sentence(self,y,x):
+        for sentence in self.knowledge:
+            for cell in sentence.cells:
+                if cell == (y,x):
+                    print(sentence)
     
     def make_safe_move(self):
         """
