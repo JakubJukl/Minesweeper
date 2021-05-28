@@ -1,6 +1,5 @@
 import itertools
 import random
-import pdb
 
 class Minesweeper():
     """
@@ -319,54 +318,7 @@ class MinesweeperAI():
                 self.knowledge.remove(sentence)
                 return 1
         return 0
-
-    def print_empty_sentences(self):
-        a = 0
-        for sentence in self.knowledge:
-            if len(sentence.cells) < 1:
-                a+=1
-                print(a,". prazdna veta ")
-
-        
-    def print_sentences(self):
-        a = 0
-        for sentence in self.knowledge:
-            a+=1
-            print(a,". veta je: ")
-            print("pocet je... ",sentence.count)
-            for cell in sentence.cells:           
-                print("y=",cell[0]," x=",cell[1])
-    
-    def print_number_duplicate_sentences(self):
-        for sentence in self.knowledge:
-            a = -1
-            for duplicate in self.knowledge:
-                if sentence == duplicate:
-                    a+=1
-            if a > 0:
-                print("veta: ",sentence," se nachazi ",a)
-    
-    def print_mines(self):
-        print("miny jsou: ")
-        for cell in self.mines:           
-            print("y=",cell[0]," x=",cell[1])
-            
-    def print_safes(self):
-        print("safe jsou: ")
-        for cell in self.safes:           
-            print("y=",cell[0]," x=",cell[1])
-            
-    def print_possible_safes(self):
-        print("mozne safe pohyby jsou: ")
-        for cell in self.safes: 
-            if not cell in self.moves_made:
-                print("y=",cell[0]," x=",cell[1])
-                
-    def find_sentence(self,y,x):
-        for sentence in self.knowledge:
-            for cell in sentence.cells:
-                if cell == (y,x):
-                    print(sentence)
+  
     
     def make_safe_move(self):
         """
@@ -395,7 +347,5 @@ class MinesweeperAI():
         if length > 0:    
             return possible_moves[random.randrange(length)]
         return None
-    
-    
     
     
