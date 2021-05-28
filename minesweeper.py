@@ -1,5 +1,6 @@
 import itertools
 import random
+import pdb
 
 class Minesweeper():
     """
@@ -146,12 +147,12 @@ class MinesweeperAI():
     Minesweeper game player
     """
 
-    def __init__(self, height=8, width=8, number_mines=8):
+    def __init__(self, height=8, width=8, mines=8):
 
         # Set initial height and width, number of mines on the playfield
         self.height = height
         self.width = width
-        self.number_mines = number_mines
+        self.num_of_mines = mines
 
         # Keep track of which cells have been clicked on
         self.moves_made = set()
@@ -177,7 +178,7 @@ class MinesweeperAI():
         for i in range(self.height):
             for j in range(self.width):
                 self.board.add((i,j))
-        self.knowledge.append(Sentence(self.board,self.number_mines))
+        self.knowledge.append(Sentence(self.board,self.num_of_mines))
                
 
 
@@ -236,7 +237,6 @@ class MinesweeperAI():
             #add sentence about neighboring cells
             self.knowledge.append(Sentence(neighboring,count))
             self.update_knowledge()
-        self.print_sentences()
 
                                 
     def update_knowledge(self):
@@ -390,11 +390,7 @@ class MinesweeperAI():
             2) are not known to be mines
         """     
         #creates list of all possible moves
-        possible_moves = []
-        for i in range(self.height):
-            for j in range(self.width):
-                if not (i,j) in self.moves_made and not (i,j) in self.mines:
-                    possible_moves.append((i,j))
+        possible_moves = list(self.board.difference(self.moves_made).difference(self.mines)) 
         length = len(possible_moves)
         if length > 0:    
             return possible_moves[random.randrange(length)]
