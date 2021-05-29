@@ -32,6 +32,7 @@ class Minesweeper():
         # At first, player has found no mines
         self.mines_found = set()
 
+    
     def print(self):
         """
         Prints a text-based representation
@@ -145,11 +146,12 @@ class MinesweeperAI():
     Minesweeper game player
     """
 
-    def __init__(self, height=8, width=8):
+    def __init__(self, height=8, width=8, mines=8):
 
-        # Set initial height and width
+        # Set initial height and width, number of mines on the playfield
         self.height = height
         self.width = width
+        self.num_of_mines = mines
 
         # Keep track of which cells have been clicked on
         self.moves_made = set()
@@ -160,6 +162,23 @@ class MinesweeperAI():
 
         # List of sentences about the game known to be true
         self.knowledge = []
+        
+        """
+        If we presume, that our agent is well informed, he has to 
+        know how many mines are there. If he shouldn't be that well 
+        informed, we can just comment it out. It just makes one huge 
+        sentence of all cells in the field and there has to be exactly 
+        'x' mines in them.  
+        BTW: The AI takes huge performance hit in certain situations, 
+        since it can have 70+ subsets (sentences) in midgame.
+        Creates board, so the ai can compute random moves efficiently.
+        """
+        self.board = set()
+        for i in range(self.height):
+            for j in range(self.width):
+                self.board.add((i,j))
+        self.knowledge.append(Sentence(self.board,self.num_of_mines))
+               
 
 
     def mark_mine(self, cell):
@@ -217,7 +236,6 @@ class MinesweeperAI():
             #add sentence about neighboring cells
             self.knowledge.append(Sentence(neighboring,count))
             self.update_knowledge()
-
 
                                 
     def update_knowledge(self):
@@ -300,8 +318,7 @@ class MinesweeperAI():
                 self.knowledge.remove(sentence)
                 return 1
         return 0
-
-
+  
     
     def make_safe_move(self):
         """
@@ -325,16 +342,10 @@ class MinesweeperAI():
             2) are not known to be mines
         """     
         #creates list of all possible moves
-        possible_moves = []
-        for i in range(self.height):
-            for j in range(self.width):
-                if not (i,j) in self.moves_made and not (i,j) in self.mines:
-                    possible_moves.append((i,j))
+        possible_moves = list(self.board.difference(self.moves_made).difference(self.mines)) 
         length = len(possible_moves)
         if length > 0:    
             return possible_moves[random.randrange(length)]
         return None
-    
-    
     
     
