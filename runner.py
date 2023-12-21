@@ -2,7 +2,8 @@ import pygame
 import sys
 import time
 
-from minesweeper import Minesweeper, MinesweeperAI
+from Minesweeper import Minesweeper
+from MinesweeperAI import MinesweeperAI
 
 HEIGHT = 8
 WIDTH = 8
@@ -12,6 +13,13 @@ MINES = 8
 BLACK = (0, 0, 0)
 GRAY = (180, 180, 180)
 WHITE = (255, 255, 255)
+
+# Rules
+RULES = [
+    "Click a cell to reveal it.",
+    "Right-click a cell to mark it as a mine.",
+    "Mark all mines successfully to win!"
+]
 
 # Create game
 pygame.init()
@@ -37,9 +45,13 @@ flag = pygame.transform.scale(flag, (cell_size, cell_size))
 mine = pygame.image.load("assets/images/mine.png")
 mine = pygame.transform.scale(mine, (cell_size, cell_size))
 
+
+def createGame() -> (Minesweeper, MinesweeperAI):
+    return Minesweeper(height=HEIGHT, width=WIDTH, mines=MINES), MinesweeperAI(height=HEIGHT, width=WIDTH, mines=MINES)
+
+
 # Create game and AI agent
-game = Minesweeper(height=HEIGHT, width=WIDTH, mines=MINES)
-ai = MinesweeperAI(height=HEIGHT, width=WIDTH, mines=MINES)
+game, ai = createGame()
 
 # Keep track of revealed cells, flagged cells, and if a mine was hit
 revealed = set()
@@ -68,12 +80,7 @@ while True:
         screen.blit(title, titleRect)
 
         # Rules
-        rules = [
-            "Click a cell to reveal it.",
-            "Right-click a cell to mark it as a mine.",
-            "Mark all mines successfully to win!"
-        ]
-        for i, rule in enumerate(rules):
+        for i, rule in enumerate(RULES):
             line = smallFont.render(rule, True, WHITE)
             lineRect = line.get_rect()
             lineRect.center = ((width / 2), 150 + 30 * i)
@@ -213,7 +220,7 @@ while True:
     # Make move and update AI knowledge
     if move:
         if game.is_mine(move):
-            lost = True            
+            lost = True
         else:
             nearby = game.nearby_mines(move)
             revealed.add(move)
