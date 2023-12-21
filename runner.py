@@ -149,8 +149,11 @@ while True:
     pygame.draw.rect(screen, WHITE, resetButton)
     screen.blit(buttonText, buttonRect)
 
+    def isGameWon(gameState: GameState):
+        return gameState.game.mines == gameState.flags or (gameState.game.width * gameState.game.height - len(gameState.game.mines)) == gameState.revealed
+
     # Display text
-    text = "Lost" if gameState.lost else "Won" if gameState.game.mines == gameState.flags else ""
+    text = "Lost" if gameState.lost else "Won" if isGameWon(gameState) else ""
     text = mediumFont.render(text, True, WHITE)
     textRect = text.get_rect()
     textRect.center = ((5 / 6) * width, (2 / 3) * height)
