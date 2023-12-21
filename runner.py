@@ -180,17 +180,8 @@ while True:
 
         # If AI button clicked, make an AI move
         if aiButton.collidepoint(mouse) and not gameState.lost:
-            move = gameState.ai.make_safe_move()
-            if move is None:
-                move = gameState.ai.make_random_move()
-                if move is None:
-                    gameState.flags = gameState.ai.mines.copy()
-                    print("No moves left to make.")
-                else:
-                    print("No known safe moves, AI making random move.")
-            else:
-                print("AI making safe move.")
-            time.sleep(0.2)
+            move = gameState.ai.make_move()
+            time.sleep(0.3)
 
         # Reset game state
         elif resetButton.collidepoint(mouse):
