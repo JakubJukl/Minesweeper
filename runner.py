@@ -150,7 +150,7 @@ while True:
     screen.blit(buttonText, buttonRect)
 
     def isGameWon(gameState: GameState):
-        return gameState.game.mines == gameState.flags or (gameState.game.width * gameState.game.height - len(gameState.game.mines)) == gameState.revealed
+        return gameState.game.mines == gameState.flags or (gameState.game.width * gameState.game.height - len(gameState.game.mines)) == len(gameState.revealed)
 
     # Display text
     text = "Lost" if gameState.lost else "Won" if isGameWon(gameState) else ""
