@@ -210,10 +210,11 @@ class MinesweeperAI():
         This function may use the knowledge in self.mines, self.safes
         and self.moves_made, but should not modify any of those values.
         """
-        for safe in self.safes:
-            if not safe in self.moves_made:
-                return safe
-        return None
+        not_made_safes = self.safes - self.moves_made
+        if len(not_made_safes) > 0:
+            return not_made_safes.pop()
+        else:
+            return None
 
     def make_random_move(self) -> tuple[int, int]:
         """
@@ -223,8 +224,7 @@ class MinesweeperAI():
             2) are not known to be mines
         """
         # creates list of all possible moves
-        possible_moves = list(self.board.difference(
-            self.moves_made).difference(self.mines))
+        possible_moves = self.board - self.moves_made - self.mines
         length = len(possible_moves)
         if length > 0:
             return possible_moves[random.randrange(length)]
