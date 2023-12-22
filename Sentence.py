@@ -10,9 +10,6 @@ class Sentence():
         self.cells = set(cells)
         self.count = count
         
-        self.mines = set()
-        self.safes = set()
-
     def __eq__(self, other):
         return self.cells == other.cells and self.count == other.count
 
