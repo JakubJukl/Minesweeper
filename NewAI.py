@@ -1,5 +1,6 @@
 from Sentence import Sentence
 
+
 class NewAI():
 
     def __init__(self, height=8, width=8, mines=8):
@@ -29,7 +30,7 @@ class NewAI():
                 if (i, j) in self.board and (i, j) != cell:
                     neighbours.add((i, j))
         return neighbours
-    
+
     def add_knowledge(self, cell: tuple[int, int], count: int):
         self.moves_made.add(cell)
         neighbours = self.__get_neighbours(cell)
@@ -43,3 +44,26 @@ class NewAI():
             return
 
         sentence = Sentence(neighbours, count)
+        self.knowledge.add(sentence)
+
+    def __remove_known(self):
+        for knowledge_sentence in self.knowledge:
+            knowledge_sentence.mark_safes(self.safes)
+            knowledge_sentence.mark_minem(self.mines)
+            if knowledge_sentence.is_resolved():
+                self.knowledge.remove(knowledge_sentence)
+                self.safes.update(knowledge_sentence.known_safes())
+                self.mines.update(knowledge_sentence.known_mines())
+        
+
+    def move(self):
+        safe_moves = self.safes - self.moves_made
+        if len(safe_moves) > 0:
+            return safe_moves.pop()
+        else:
+            self.__remove_known()
+            if len(self.knowledge) == 0:
+                return None
+            else:
+                sentence = self.knowledge.pop()
+                return sentence.cells.pop()

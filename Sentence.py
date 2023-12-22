@@ -31,6 +31,15 @@ class Sentence():
         if self.count == 0:
             return self.cells
         return set()
+    
+    def mark_mines(self, mines: set[tuple[int, int]]):
+        cells_with_mines = self.cells.copy()
+        self.cells -= mines
+        self.count -= len(cells_with_mines) - len(self.cells)
+
+    def mark_safes(self, safes: set[tuple[int, int]]):
+        self.cells -= safes
+
 
     def mark_mine(self, cell):
         """
@@ -49,4 +58,5 @@ class Sentence():
         if cell in self.cells:
             self.cells.remove(cell)
                 
-            
+    def is_resolved(self):
+        return len(self.cells) == self.count or self.count == 0
