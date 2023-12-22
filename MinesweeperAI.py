@@ -115,6 +115,12 @@ class MinesweeperAI():
             self.knowledge.append(Sentence(neighboring, count))
             self.update_knowledge()
 
+    def known_safes(self, sentence):
+        return sentence.known_safes().copy()
+    
+    def known_mines(self, sentence):
+        return sentence.known_mines().copy()
+
     def update_knowledge(self):
         """
         Updates knowledge with regards to newly gained information.
@@ -122,8 +128,8 @@ class MinesweeperAI():
         num_of_changed = 1
         while num_of_changed > 0:
             num_of_changed = 0
-            num_of_changed += self.mark("known_safes()", self.mark_safe)
-            num_of_changed += self.mark("known_mines()", self.mark_mine)
+            num_of_changed += self.mark(self.known_safes, self.mark_safe)
+            num_of_changed += self.mark(self.known_mines, self.mark_mine)
             num_of_changed += self.create_subsets()
 
     def create_subsets(self):
@@ -156,7 +162,7 @@ class MinesweeperAI():
             i += 1
         return num_of_changed
 
-    def mark(self, str_known_set, fce):
+    def mark(self, known_set_fce, fce):
         """
         Marks every cell, that is known to be safe/mine.
         Made because both mark_safe and mark_mine require looping
@@ -168,24 +174,7 @@ class MinesweeperAI():
         length = len(self.knowledge)
         while i < length:
             sentence = self.knowledge[i]
-            known_set = eval("sentence."+str_known_set+".copy()")
-            for safe in known_set:
-                fce(safe)
-                num_of_changed += 1
-            length -= self.remove_if_empty(sentence)
-            i += 1
-        return num_of_changed
-
-    def mark_num(self, idk, fce):
-        num_of_changed = 0
-        i = 0
-        length = len(self.knowledge)
-        while i < length:
-            sentence = self.knowledge[i]
-            if idk == 1:
-                known_set = sentence.known_safes().copy()
-            else:
-                known_set = sentence.known_mines().copy()
+            known_set = known_set_fce(sentence)
             for safe in known_set:
                 fce(safe)
                 num_of_changed += 1
