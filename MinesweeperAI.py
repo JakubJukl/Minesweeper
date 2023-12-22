@@ -96,19 +96,18 @@ class MinesweeperAI():
 
         y, x = cell
 
-        # create set of neighboring cells, that are not already safe or mines
+        # create set of neighboring cells
         for i in range(y - 1, y + 2):
             for j in range(x - 1, x + 2):
                 # I don't think the jumps behave like hidden traps, but more as preconditions
                 # Ignore the cell itself
-                if i > self.height - 1 or i < 0 or j > self.width - 1 or j < 0:
-                    continue
-                if (i, j) in self.safes:
-                    continue
-                if (i, j) in self.mines:
-                    count -= 1
-                    continue
-                neighboring.add((i, j))
+                if (i, j) in self.board and not (i, j) == cell:
+                    neighboring.add((i, j))
+
+        neighboring -= self.safes
+        neighboring_with_mines = neighboring.copy()
+        neighboring -= self.mines
+        count -= len(neighboring_with_mines) - len(neighboring)
 
         # if there is at least one cell in the set
         if len(neighboring) > 0:
@@ -176,7 +175,7 @@ class MinesweeperAI():
             length -= self.remove_if_empty(sentence)
             i += 1
         return num_of_changed
-    
+
     def mark_num(self, idk, fce):
         num_of_changed = 0
         i = 0
