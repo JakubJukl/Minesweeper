@@ -183,7 +183,7 @@ while True:
                     else:
                         gameState.flags.add((i, j))
                         gameState.ai.flag_placed((i, j))
-                    time.sleep(0.2)
+                    time.sleep(0.3)
 
     elif left == 1:
         mouse = pygame.mouse.get_pos()

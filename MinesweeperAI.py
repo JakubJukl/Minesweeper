@@ -38,31 +38,19 @@ class MinesweeperAI():
         self.safes.add(cell)
         neighbours = self.__get_neighbours(cell)
         sentence = Sentence(neighbours, count)
-        # print(",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,")
-        # print("got: ", cell, count, sentence)
-        # print(",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,")
         sentence.mark_safes(self.safes)
         sentence.mark_mines(self.mines)
-        # print("after marking: ", sentence)
-        # print("------------------------------")
-        # skip if empty
         if not len(sentence.cells) == 0:
             self.knowledge.add(sentence)
-            # print("added ", sentence)
-        # print("------------------------------")
-        self.__find_safes()
-        # print("safes: ", self.__get_safe_moves())
-        # print("mines: ", self.mines)
+        # self.__find_safes()
 
     def __find_safes(self):
-        resolved_any_last_run = True
         subset_any_last_run = True
-        # while len(self.__get_safe_moves()) == 0 and (resolved_any_last_run or subset_any_last_run):
-        while resolved_any_last_run or subset_any_last_run:
-            resolved_any_last_run = self.__remove_known()
+        while len(self.__get_safe_moves()) == 0 and subset_any_last_run:
+            self.__remove_known()
 
-            # if len(self.__get_safe_moves()) == 0:
-            subset_any_last_run = self.__create_subsets()
+            if len(self.__get_safe_moves()) == 0:
+                subset_any_last_run = self.__create_subsets()
 
     def __remove_known(self) -> bool:
         to_traverse = deque(self.knowledge)
@@ -79,9 +67,7 @@ class MinesweeperAI():
                 self.mines.update(sentence.known_mines())
                 to_traverse.extendleft(traversed)
                 traversed = set()
-                print("resolved ", sentence)
             else:
-                # print("not resolved ", sentence) 
                 traversed.add(sentence)
 
         self.knowledge = set(traversed)
@@ -92,9 +78,7 @@ class MinesweeperAI():
         for sentence_i in self.knowledge:
             for sentence_j in self.knowledge:
                 if not sentence_j == sentence_i and sentence_i.is_subset(sentence_j):
-                    # print("subset:", sentence_i, " is subset of ", sentence_j)
                     sentence_j.minus(sentence_i)
-                    # print("after minus: ", sentence_j)
                     subset_any_last_run = True
         self.knowledge = set(self.knowledge)
         return subset_any_last_run
@@ -107,13 +91,12 @@ class MinesweeperAI():
         non_marked_mines = self.mines - self.flags_placed
         if len(non_marked_mines) > 0:
             return non_marked_mines.pop(), True
-        # print("..............................")
-        self.__find_safes()
+        # self.__find_safes()
         safe_moves = self.__get_safe_moves()
         if len(safe_moves) > 0:
             return safe_moves.pop(), False
         else:
-            # self.__find_safes()
+            self.__find_safes()
             if try_again:
                 return self.move(False)
             else:
