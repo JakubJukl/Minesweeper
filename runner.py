@@ -2,13 +2,11 @@ import pygame
 import sys
 import time
 
-from Minesweeper import Minesweeper
-from MinesweeperAI import MinesweeperAI
 from GameState import GameState
 
 HEIGHT = 8
 WIDTH = 8
-MINES = 16
+MINES = 12
 
 WINDOW_WIDTH = 600
 WINDOW_HEIGHT = 400
@@ -186,7 +184,7 @@ while True:
 
         # If AI button clicked, make an AI move
         if aiButton.collidepoint(mouse) and not gameState.lost:
-            move, place_flag = gameState.ai.make_move()
+            move, place_flag = gameState.ai.move()
             time.sleep(0.3)
 
         # Reset game state
