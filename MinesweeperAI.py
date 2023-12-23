@@ -1,9 +1,9 @@
 from Sentence import Sentence
 from collections import deque
 
-
 class MinesweeperAI():
 
+    # if AI shouldn't know about number of mines, pass 0
     def __init__(self, height=8, width=8, mines=8):
         self.height = height
         self.width = width
@@ -16,13 +16,17 @@ class MinesweeperAI():
         self.safes = set()
 
         self.knowledge : set[Sentence] = set()
-        self.unpro: set[Sentence] = set()
+
+        # if True, calculation of safe moves happens as soon as possible
+        self.search_asap = True
 
         self.board = set()
         for i in range(self.height):
             for j in range(self.width):
                 self.board.add((i, j))
-        self.knowledge.add(Sentence(self.board.copy(), self.num_of_mines))
+        
+        if self.num_of_mines > 0:
+            self.knowledge.add(Sentence(self.board.copy(), self.num_of_mines))
 
     def __get_neighbours(self, cell: tuple[int, int]):
         neighbours = set()
@@ -42,14 +46,16 @@ class MinesweeperAI():
         sentence.mark_mines(self.mines)
         if not len(sentence.cells) == 0:
             self.knowledge.add(sentence)
-        # self.__find_safes()
+
+        if self.search_asap:
+            self.__find_safes()
 
     def __find_safes(self):
         subset_any_last_run = True
-        while len(self.__get_safe_moves()) == 0 and subset_any_last_run:
+        while (self.search_asap or (len(self.__get_safe_moves()) == 0)) and subset_any_last_run:
             self.__remove_known()
 
-            if len(self.__get_safe_moves()) == 0:
+            if self.search_asap or (len(self.__get_safe_moves()) == 0):
                 subset_any_last_run = self.__create_subsets()
 
     def __remove_known(self) -> bool:
@@ -91,7 +97,6 @@ class MinesweeperAI():
         non_marked_mines = self.mines - self.flags_placed
         if len(non_marked_mines) > 0:
             return non_marked_mines.pop(), True
-        # self.__find_safes()
         safe_moves = self.__get_safe_moves()
         if len(safe_moves) > 0:
             return safe_moves.pop(), False
