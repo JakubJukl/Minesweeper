@@ -113,7 +113,13 @@ while True:
 
             # Add a mine, flag, or number if needed
             if gameState.game.is_mine((i, j)) and gameState.lost:
-                screen.blit(mine, rect)
+                if (i, j) == gameState.losing_move:
+                    red_background = mine.copy() # just for size
+                    red_background.fill((255, 0, 0, 100))
+                    screen.blit(red_background, rect)
+                    screen.blit(mine, rect)
+                else:
+                    screen.blit(mine, rect)
             elif (i, j) in gameState.flags:
                 screen.blit(flag, rect)
             elif (i, j) in gameState.revealed:
@@ -203,13 +209,13 @@ while True:
 
     # Make move and update AI knowledge
     if move:
-
         if place_flag:
             gameState.flags.add(move)
             gameState.ai.flag_placed(move)
         else:
             if gameState.game.is_mine(move):
                 gameState.lost = True
+                gameState.losing_move = move
             else:
                 nearby = gameState.game.nearby_mines(move)
                 gameState.revealed.add(move)

@@ -8,6 +8,7 @@ class GameState():
     revealed: set
     flags: set
     lost: bool
+    losing_move: tuple[int, int]
 
     def __init__(self, height, width, mines) -> None:
         self.game = Minesweeper(height, width, mines)
@@ -15,3 +16,4 @@ class GameState():
         self.revealed = set()
         self.flags = set()
         self.lost = False
+        self.losing_move = None
