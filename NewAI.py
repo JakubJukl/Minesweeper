@@ -1,4 +1,5 @@
 from Sentence import Sentence
+from collections import deque
 
 
 class NewAI():
@@ -14,13 +15,14 @@ class NewAI():
         self.mines = set()
         self.safes = set()
 
-        self.knowledge = set()
+        self.knowledge : set[Sentence] = set()
+        self.unpro: set[Sentence] = set()
 
         self.board = set()
         for i in range(self.height):
             for j in range(self.width):
                 self.board.add((i, j))
-        self.knowledge.append(Sentence(self.board, self.num_of_mines))
+        self.knowledge.add(Sentence(self.board.copy(), self.num_of_mines))
 
     def __get_neighbours(self, cell: tuple[int, int]):
         neighbours = set()
@@ -33,37 +35,101 @@ class NewAI():
 
     def add_knowledge(self, cell: tuple[int, int], count: int):
         self.moves_made.add(cell)
+        self.safes.add(cell)
         neighbours = self.__get_neighbours(cell)
-        neighbours -= self.safes
-        neighbours_with_mines = neighbours.copy()
-        neighbours -= self.mines
-        count -= len(neighbours_with_mines) - len(neighbours)
-
+        sentence = Sentence(neighbours, count)
+        print(",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,")
+        print("got: ", cell, count, sentence)
+        print(",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,")
+        sentence.mark_safes(self.safes)
+        sentence.mark_mines(self.mines)
+        print("after marking: ", sentence)
+        print("------------------------------")
         # skip if empty
-        if len(neighbours) == 0:
+        if len(sentence.cells) == 0:
             return
 
-        sentence = Sentence(neighbours, count)
         self.knowledge.add(sentence)
+        print("added ", sentence)
+        print("------------------------------")
+        self.__find_safes()
+        print("safes: ", self.__get_safe_moves())
+        print("mines: ", self.mines)
 
-    def __remove_known(self):
-        for knowledge_sentence in self.knowledge:
-            knowledge_sentence.mark_safes(self.safes)
-            knowledge_sentence.mark_minem(self.mines)
-            if knowledge_sentence.is_resolved():
-                self.knowledge.remove(knowledge_sentence)
-                self.safes.update(knowledge_sentence.known_safes())
-                self.mines.update(knowledge_sentence.known_mines())
-        
+    def __find_safes(self):
+        resolved_any_last_run = True
+        subset_any_last_run = True
+        # while len(self.__get_safe_moves()) == 0 and (resolved_any_last_run or subset_any_last_run):
+        while resolved_any_last_run or subset_any_last_run:
+            resolved_any_last_run = self.__remove_known()
 
-    def move(self):
-        safe_moves = self.safes - self.moves_made
+            # if len(self.__get_safe_moves()) == 0:
+            subset_any_last_run = self.__create_subsets()
+
+    def __remove_known(self) -> bool:
+        to_traverse = deque(self.knowledge)
+        traversed = set()
+        resolved_any = False
+
+        while len(to_traverse) > 0:
+            sentence = to_traverse.pop()
+            sentence.mark_safes(self.safes)
+            sentence.mark_mines(self.mines)
+            if sentence.is_resolved():
+                resolved_any = True
+                self.safes.update(sentence.known_safes())
+                self.mines.update(sentence.known_mines())
+                to_traverse.extendleft(traversed)
+                traversed = set()
+                print("resolved ", sentence)
+            else:
+                # print("not resolved ", sentence) 
+                traversed.add(sentence)
+
+        self.knowledge = set(traversed)
+        return resolved_any
+
+    def __create_subsets(self) -> bool:
+        subset_any_last_run = False
+        for sentence_i in self.knowledge:
+            for sentence_j in self.knowledge:
+                if not sentence_j == sentence_i and sentence_i.is_subset(sentence_j):
+                    print("subset:", sentence_i, " is subset of ", sentence_j)
+                    sentence_j.minus(sentence_i)
+                    print("after minus: ", sentence_j)
+                    subset_any_last_run = True
+        self.knowledge = set(self.knowledge)
+        return subset_any_last_run
+
+
+    def __get_safe_moves(self):
+        return self.safes - self.moves_made
+
+    def move(self, try_again: bool = True):
+        print("..............................")
+        self.__find_safes()
+        safe_moves = self.__get_safe_moves()
         if len(safe_moves) > 0:
             return safe_moves.pop()
         else:
-            self.__remove_known()
-            if len(self.knowledge) == 0:
-                return None
+            # self.__find_safes()
+            if try_again:
+                return self.move(False)
             else:
-                sentence = self.knowledge.pop()
-                return sentence.cells.pop()
+                return self.__get_random_move()
+            
+    def __get_random_move(self):
+        available_moves = self.board - self.moves_made - self.mines - self.flags_placed
+        if (len(available_moves) == 0):
+            available_moves = self.board - self.moves_made - self.mines
+        if (len(available_moves) == 0):
+            return None
+        else:
+            print("random")
+            return available_moves.pop()
+            
+    def flag_placed(self, cell: tuple[int, int]):
+        self.flags_placed.add(cell)
+
+    def flag_removed(self, cell: tuple[int, int]):
+        self.flags_placed.remove(cell)

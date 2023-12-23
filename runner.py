@@ -171,8 +171,10 @@ while True:
                 if cells[i][j].collidepoint(mouse) and (i, j) not in gameState.revealed:
                     if (i, j) in gameState.flags:
                         gameState.flags.remove((i, j))
+                        gameState.ai.flag_removed((i, j))
                     else:
                         gameState.flags.add((i, j))
+                        gameState.ai.flag_placed((i, j))
                     time.sleep(0.2)
 
     elif left == 1:

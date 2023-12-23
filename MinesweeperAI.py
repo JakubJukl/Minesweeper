@@ -1,6 +1,7 @@
 import random
 
 from Sentence import Sentence
+from NewAI import NewAI
 
 
 class MinesweeperAI():
@@ -9,6 +10,8 @@ class MinesweeperAI():
     """
 
     def __init__(self, height=8, width=8, mines=8):
+
+        self.newAI = NewAI(height, width, mines)
 
         # Set initial height and width, number of mines on the playfield
         self.height = height
@@ -55,7 +58,11 @@ class MinesweeperAI():
                 print("AI making random move.")
         else:
             print("AI making safe move.")
-        return move
+
+        s = self.newAI.move()
+        print("making move: ", s)
+        return s
+        #return move
 
     def mark_mine(self, cell):
         """
@@ -90,6 +97,8 @@ class MinesweeperAI():
             5) add any new sentences to the AI's knowledge base
                if they can be inferred from existing knowledge
         """
+        self.newAI.add_knowledge(cell, count)
+
         neighboring = set()
         self.moves_made.add(cell)
         self.mark_safe(cell)
@@ -224,8 +233,16 @@ class MinesweeperAI():
             2) are not known to be mines
         """
         # creates list of all possible moves
-        possible_moves = self.board - self.moves_made - self.mines
+        possible_moves = list(self.board - self.moves_made - self.mines)
         length = len(possible_moves)
         if length > 0:
             return possible_moves[random.randrange(length)]
         return None
+
+    def flag_placed(self, cell: tuple[int, int]):
+        self.flags_placed.add(cell)
+        self.newAI.flag_placed(cell)
+
+    def flag_removed(self, cell: tuple[int, int]):
+        self.flags_placed.remove(cell)
+        self.newAI.flag_removed(cell)

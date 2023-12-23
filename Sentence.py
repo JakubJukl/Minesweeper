@@ -9,6 +9,9 @@ class Sentence():
     def __init__(self, cells: set[tuple[int, int]], count: int):
         self.cells = cells
         self.count = count
+
+    def __hash__(self):
+        return hash((tuple(self.cells), self.count))
         
     def __eq__(self, other):
         return self.cells == other.cells
@@ -32,13 +35,17 @@ class Sentence():
             return self.cells
         return set()
     
-    def mark_mines(self, mines: set[tuple[int, int]]):
-        cells_with_mines = self.cells.copy()
+    def mark_mines(self, mines: set[tuple[int, int]]) -> bool:
+        len_of_cells_with_mines = len(self.cells)
         self.cells -= mines
-        self.count -= len(cells_with_mines) - len(self.cells)
+        len_of_cells = len(self.cells)
+        self.count -= len_of_cells_with_mines - len_of_cells
+        return len_of_cells_with_mines != len_of_cells
 
-    def mark_safes(self, safes: set[tuple[int, int]]):
+    def mark_safes(self, safes: set[tuple[int, int]]) -> bool:
+        len_of_cells_with_safes = len(self.cells)
         self.cells -= safes
+        return len_of_cells_with_safes != len(self.cells)
 
 
     def mark_mine(self, cell):
@@ -60,3 +67,10 @@ class Sentence():
                 
     def is_resolved(self):
         return len(self.cells) == self.count or self.count == 0
+    
+    def is_subset(self, other):
+        return self.cells.issubset(other.cells)
+    
+    def minus(self, subset):
+        self.cells -= subset.cells
+        self.count -= subset.count
