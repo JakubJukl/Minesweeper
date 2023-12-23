@@ -8,7 +8,10 @@ from GameState import GameState
 
 HEIGHT = 8
 WIDTH = 8
-MINES = 8
+MINES = 16
+
+WINDOW_WIDTH = 600
+WINDOW_HEIGHT = 400
 
 # Colors
 BLACK = (0, 0, 0)
@@ -24,7 +27,7 @@ RULES = [
 
 # Create game
 pygame.init()
-size = width, height = 600, 400
+size = width, height = WINDOW_WIDTH, WINDOW_HEIGHT
 screen = pygame.display.set_mode(size)
 
 # Fonts
@@ -46,7 +49,7 @@ flag = pygame.transform.scale(flag, (cell_size, cell_size))
 mine = pygame.image.load("assets/images/mine.png")
 mine = pygame.transform.scale(mine, (cell_size, cell_size))
 
-gameState = GameState()
+gameState = GameState(height=HEIGHT, width=WIDTH, mines=MINES)
 
 # Show instructions initially
 instructions = True
@@ -160,6 +163,7 @@ while True:
     screen.blit(text, textRect)
 
     move = None
+    place_flag = False
 
     left, _, right = pygame.mouse.get_pressed()
 
@@ -182,12 +186,12 @@ while True:
 
         # If AI button clicked, make an AI move
         if aiButton.collidepoint(mouse) and not gameState.lost:
-            move = gameState.ai.make_move()
+            move, place_flag = gameState.ai.make_move()
             time.sleep(0.3)
 
         # Reset game state
         elif resetButton.collidepoint(mouse):
-            gameState = GameState()
+            gameState = GameState(height=HEIGHT, width=WIDTH, mines=MINES)
             continue
 
         # User-made move
@@ -201,11 +205,16 @@ while True:
 
     # Make move and update AI knowledge
     if move:
-        if gameState.game.is_mine(move):
-            gameState.lost = True
+
+        if place_flag:
+            gameState.flags.add(move)
+            gameState.ai.flag_placed(move)
         else:
-            nearby = gameState.game.nearby_mines(move)
-            gameState.revealed.add(move)
-            gameState.ai.add_knowledge(move, nearby)
+            if gameState.game.is_mine(move):
+                gameState.lost = True
+            else:
+                nearby = gameState.game.nearby_mines(move)
+                gameState.revealed.add(move)
+                gameState.ai.add_knowledge(move, nearby)
 
     pygame.display.flip()

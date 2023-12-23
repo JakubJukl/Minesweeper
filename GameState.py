@@ -9,9 +9,9 @@ class GameState():
     flags: set
     lost: bool
 
-    def __init__(self) -> None:
-        self.game = Minesweeper()
-        self.ai = MinesweeperAI()
+    def __init__(self, height, width, mines) -> None:
+        self.game = Minesweeper(height, width, mines)
+        self.ai = MinesweeperAI(height, width, mines)
         self.revealed = set()
         self.flags = set()
         self.lost = False

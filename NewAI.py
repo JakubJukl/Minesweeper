@@ -38,23 +38,21 @@ class NewAI():
         self.safes.add(cell)
         neighbours = self.__get_neighbours(cell)
         sentence = Sentence(neighbours, count)
-        print(",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,")
-        print("got: ", cell, count, sentence)
-        print(",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,")
+        # print(",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,")
+        # print("got: ", cell, count, sentence)
+        # print(",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,")
         sentence.mark_safes(self.safes)
         sentence.mark_mines(self.mines)
-        print("after marking: ", sentence)
-        print("------------------------------")
+        # print("after marking: ", sentence)
+        # print("------------------------------")
         # skip if empty
-        if len(sentence.cells) == 0:
-            return
-
-        self.knowledge.add(sentence)
-        print("added ", sentence)
-        print("------------------------------")
+        if not len(sentence.cells) == 0:
+            self.knowledge.add(sentence)
+            # print("added ", sentence)
+        # print("------------------------------")
         self.__find_safes()
-        print("safes: ", self.__get_safe_moves())
-        print("mines: ", self.mines)
+        # print("safes: ", self.__get_safe_moves())
+        # print("mines: ", self.mines)
 
     def __find_safes(self):
         resolved_any_last_run = True
@@ -94,9 +92,9 @@ class NewAI():
         for sentence_i in self.knowledge:
             for sentence_j in self.knowledge:
                 if not sentence_j == sentence_i and sentence_i.is_subset(sentence_j):
-                    print("subset:", sentence_i, " is subset of ", sentence_j)
+                    # print("subset:", sentence_i, " is subset of ", sentence_j)
                     sentence_j.minus(sentence_i)
-                    print("after minus: ", sentence_j)
+                    # print("after minus: ", sentence_j)
                     subset_any_last_run = True
         self.knowledge = set(self.knowledge)
         return subset_any_last_run
@@ -106,17 +104,20 @@ class NewAI():
         return self.safes - self.moves_made
 
     def move(self, try_again: bool = True):
-        print("..............................")
+        non_marked_mines = self.mines - self.flags_placed
+        if len(non_marked_mines) > 0:
+            return non_marked_mines.pop(), True
+        # print("..............................")
         self.__find_safes()
         safe_moves = self.__get_safe_moves()
         if len(safe_moves) > 0:
-            return safe_moves.pop()
+            return safe_moves.pop(), False
         else:
             # self.__find_safes()
             if try_again:
                 return self.move(False)
             else:
-                return self.__get_random_move()
+                return self.__get_random_move(), False
             
     def __get_random_move(self):
         available_moves = self.board - self.moves_made - self.mines - self.flags_placed
@@ -125,7 +126,7 @@ class NewAI():
         if (len(available_moves) == 0):
             return None
         else:
-            print("random")
+            print("making random move")
             return available_moves.pop()
             
     def flag_placed(self, cell: tuple[int, int]):
