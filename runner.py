@@ -3,13 +3,22 @@ import sys
 import time
 
 from GameState import GameState
+from Config import Config
 
-HEIGHT = 8
-WIDTH = 8
-MINES = 12
+CONFIG_FILE_PATH = 'config.txt'
 
-WINDOW_WIDTH = 600
-WINDOW_HEIGHT = 400
+def read_config_file() -> Config:
+    config = Config()
+    lines = None
+    with open(CONFIG_FILE_PATH, 'r') as f:
+        lines = f.readlines()
+    for line in lines:
+        config.set_from_file(line)
+        if config.is_setup():
+            break
+    return config
+
+config = read_config_file()
 
 # Colors
 BLACK = (0, 0, 0)
@@ -25,7 +34,7 @@ RULES = [
 
 # Create game
 pygame.init()
-size = width, height = WINDOW_WIDTH, WINDOW_HEIGHT
+size = width, height = config.window_width, config.window_height
 screen = pygame.display.set_mode(size)
 
 # Fonts
@@ -38,7 +47,7 @@ largeFont = pygame.font.Font(OPEN_SANS, 40)
 BOARD_PADDING = 20
 board_width = ((2 / 3) * width) - (BOARD_PADDING * 2)
 board_height = height - (BOARD_PADDING * 2)
-cell_size = int(min(board_width / WIDTH, board_height / HEIGHT))
+cell_size = int(min(board_width / config.width, board_height / config.height))
 board_origin = (BOARD_PADDING, BOARD_PADDING)
 
 # Add images
@@ -47,7 +56,7 @@ flag = pygame.transform.scale(flag, (cell_size, cell_size))
 mine = pygame.image.load("assets/images/mine.png")
 mine = pygame.transform.scale(mine, (cell_size, cell_size))
 
-gameState = GameState(height=HEIGHT, width=WIDTH, mines=MINES)
+gameState = GameState(height=config.height, width=config.width, mines=config.mines)
 
 # Show instructions initially
 instructions = True
@@ -98,9 +107,9 @@ while True:
 
     # Draw board
     cells = []
-    for i in range(HEIGHT):
+    for i in range(config.height):
         row = []
-        for j in range(WIDTH):
+        for j in range(config.width):
 
             # Draw rectangle for cell
             rect = pygame.Rect(
@@ -174,8 +183,8 @@ while True:
     # Check for a right-click to toggle flagging
     if right == 1 and not gameState.lost:
         mouse = pygame.mouse.get_pos()
-        for i in range(HEIGHT):
-            for j in range(WIDTH):
+        for i in range(config.height):
+            for j in range(config.width):
                 if cells[i][j].collidepoint(mouse) and (i, j) not in gameState.revealed:
                     if (i, j) in gameState.flags:
                         gameState.flags.remove((i, j))
@@ -195,13 +204,13 @@ while True:
 
         # Reset game state
         elif resetButton.collidepoint(mouse):
-            gameState = GameState(height=HEIGHT, width=WIDTH, mines=MINES)
+            gameState = GameState(height=config.height, width=config.width, mines=config.mines)
             continue
 
         # User-made move
         elif not gameState.lost:
-            for i in range(HEIGHT):
-                for j in range(WIDTH):
+            for i in range(config.height):
+                for j in range(config.width):
                     if (cells[i][j].collidepoint(mouse)
                             and (i, j) not in gameState.flags
                             and (i, j) not in gameState.revealed):
