@@ -59,14 +59,16 @@ class MinesweeperAI():
             self.__find_safes()
 
     def __find_safes(self):
+        """Attempts to find new safes and mines using the knowledge base"""
         subset_any_last_run = True
         while (self.search_asap or (len(self.__get_safe_moves()) == 0)) and subset_any_last_run:
             self.__remove_known()
 
             if self.search_asap or (len(self.__get_safe_moves()) == 0):
-                subset_any_last_run = self.__create_subsets()
+                subset_any_last_run = self.__reduce_supersets()
 
     def __remove_known(self) -> bool:
+        """Resolves sentences by removing known safes and mines from them"""
         # store sentences, that were not traversed with current known set of mines and safes in a deque
         # so they can be traversed in an order
         to_traverse = deque(self.knowledge)
@@ -93,21 +95,30 @@ class MinesweeperAI():
         self.knowledge = set(traversed)
         return resolved_any
 
-    def __create_subsets(self) -> bool:
+    def __reduce_supersets(self) -> bool:
+        """Finds superset and subset combinations and removes subset cells from the superset"""
         subset_any_last_run = False
         for sentence_i in self.knowledge:
             for sentence_j in self.knowledge:
+                # iterate through all combinations of sentences and check for subsets
                 if not sentence_j == sentence_i and sentence_i.is_subset(sentence_j):
-                    sentence_j.minus(sentence_i)
+                    sentence_j.minus_subset(sentence_i)
                     subset_any_last_run = True
+        # reassign knowledge to rehash the set
         self.knowledge = set(self.knowledge)
         return subset_any_last_run
 
 
-    def __get_safe_moves(self):
+    def __get_safe_moves(self) -> set[tuple[int, int]]:
+        """Returns known safe moves that have not been made yet"""
         return self.safes - self.moves_made
+    
+    def move(self) -> tuple[tuple[int, int], bool]:
+        """Returns a move to be made and a boolean indicating if it should be flag placing move"""
+        return self.__move(True)
 
-    def move(self, try_again: bool = True):
+    def __move(self, try_again: bool) -> tuple[tuple[int, int], bool]:
+        """Can be called recursively, so if there are no safe moves, it will try to find new safes and mines"""
         non_marked_mines = self.mines - self.flags_placed
         if len(non_marked_mines) > 0:
             return non_marked_mines.pop(), True
@@ -117,19 +128,40 @@ class MinesweeperAI():
         else:
             self.__find_safes()
             if try_again:
-                return self.move(False)
+                return self.__move(False)
             else:
                 return self.__get_random_move(), False
             
-    def __get_random_move(self):
+
+    def __get_random_move(self) -> tuple[int, int]:
+        """Returns a random move that has not been made yet"""
         available_moves = self.board - self.moves_made - self.mines - self.flags_placed
-        if (len(available_moves) == 0):
+
+        if len(available_moves) == 0:
+            # in case flags were placed where they shouldn't be
             available_moves = self.board - self.moves_made - self.mines
-        if (len(available_moves) == 0):
+        if len(available_moves) == 0:
             return None
+        
+        # if we know number of mines, we can calculate the probability of getting a mine when making a random move without any knowledge
+        number_of_mines = len(available_moves) if self.num_of_mines == 0 else self.num_of_mines - len(self.mines)
+        safest_sentence = Sentence(available_moves, number_of_mines)
+        safest_sentence_probability = safest_sentence.mine_probability()
+
+        for sentence in self.knowledge:
+            if len(sentence.cells) == 0:
+                print("empty sentence in making random move -> shouldn't happen")
+                continue
+            current_sentence_probability = sentence.mine_probability()
+            if current_sentence_probability < safest_sentence_probability:
+                safest_sentence = sentence
+                safest_sentence_probability = current_sentence_probability
+        
+        if (safest_sentence_probability == 1):
+            print("Making a random move, but can't calculate probability, because of unknown number of mines")
         else:
-            print("making random move")
-            return available_moves.pop()
+            print(f"Making a random move with probability of finding mine: {round(safest_sentence_probability, 2) * 100 : .0f}%")
+        return sentence.get_random_cell()
             
     def flag_placed(self, cell: tuple[int, int]):
         self.flags_placed.add(cell)
