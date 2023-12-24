@@ -3,6 +3,15 @@ Given you have python installed:
 Run `pip3 install -r requirements.txt` to install pygame
 Run `python runner.py`in this directory to run the game
 
+## Config
+**WINDOW_WIDTH** - window width in pixels
+**WINDOW_HEIGHT** - windows height in pixels
+**HEIGHT_TILES** - game board height in number of cells
+**WIDTH_TILES** - game board width in number of cells
+**MINE_TILES** - number of cells with mines
+**AI_KNOWS_NUMBER_OF_MINES** - 1 if AI player should know how many mines there are in the game board
+**AI_SEARCH_ASAP** - 1 if AI player should calculate mines and safe moves as soon as possible
+
 ## How it works
 AI player keep knowledge base consisting of sentences about the game.
 Every sentence has a collection of cells and count of mines in those cells.
