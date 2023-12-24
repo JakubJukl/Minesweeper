@@ -4,7 +4,7 @@ from collections import deque
 class MinesweeperAI():
 
     # if AI shouldn't know about number of mines, pass 0
-    def __init__(self, height: int, width: int, mines: int = 0):
+    def __init__(self, height: int, width: int, mines: int, search_asap: bool):
         # Set initial width and height of the board and optional number of mines
         self.height = height
         self.width = width
@@ -22,7 +22,7 @@ class MinesweeperAI():
         self.knowledge : set[Sentence] = set()
 
         # if True, calculation of safe moves happens as soon as possible
-        self.search_asap = True
+        self.search_asap = search_asap
 
         # initialize board, so we can access random moves faster
         self.board = set()
@@ -161,7 +161,7 @@ class MinesweeperAI():
             print("Making a random move, but can't calculate probability, because of unknown number of mines")
         else:
             print(f"Making a random move with probability of finding mine: {round(safest_sentence_probability, 2) * 100 : .0f}%")
-        return sentence.get_random_cell()
+        return safest_sentence.get_random_cell()
             
     def flag_placed(self, cell: tuple[int, int]):
         self.flags_placed.add(cell)

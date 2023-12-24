@@ -5,6 +5,8 @@ WINDOW_HEIGHT_KEY = "WINDOW_HEIGHT"
 HEIGHT_KEY = "HEIGHT_TILES"
 WIDTH_KEY = "WIDTH_TILES"
 MINES_KEY = "MINE_TILES"
+AI_KNOWS_NUMBER_OF_MINES_KEY = "AI_KNOWS_NUMBER_OF_MINES"
+AI_SEARCH_ASAP_KEY = "AI_SEARCH_ASAP"
 
 
 class Config():
@@ -15,6 +17,8 @@ class Config():
     height: int = None
     width: int = None
     mines: int = None
+    ai_knows_number_of_mines: bool = None
+    ai_search_asap: bool = None
 
     def __init__(self) -> None:
         pass
@@ -34,6 +38,10 @@ class Config():
                 self.width = value
             elif key == MINES_KEY:
                 self.mines = value
+            elif key == AI_KNOWS_NUMBER_OF_MINES_KEY:
+                self.ai_knows_number_of_mines = bool(value)
+            elif key == AI_SEARCH_ASAP_KEY:
+                self.ai_search_asap = bool(value)
             else:
                 print(f"Unknown config key: '{key}'")
 
@@ -43,5 +51,7 @@ class Config():
             self.width is not None and
             self.mines is not None and
             self.window_width is not None and
-            self.window_height is not None
+            self.window_height is not None and
+            self.ai_knows_number_of_mines is not None and
+            self.ai_search_asap is not None
         )

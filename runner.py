@@ -7,6 +7,7 @@ from Config import Config
 
 CONFIG_FILE_PATH = 'config.txt'
 
+
 def read_config_file() -> Config:
     config = Config()
     lines = None
@@ -18,7 +19,17 @@ def read_config_file() -> Config:
             break
     return config
 
+
 config = read_config_file()
+
+def create_game_state() -> GameState:
+    return GameState(
+        height=config.height,
+        width=config.width,
+        mines=config.mines,
+        ai_knows_number_of_mines=config.ai_knows_number_of_mines,
+        ai_search_asap=config.ai_search_asap
+    )
 
 # Colors
 BLACK = (0, 0, 0)
@@ -56,7 +67,7 @@ flag = pygame.transform.scale(flag, (cell_size, cell_size))
 mine = pygame.image.load("assets/images/mine.png")
 mine = pygame.transform.scale(mine, (cell_size, cell_size))
 
-gameState = GameState(height=config.height, width=config.width, mines=config.mines)
+gameState = create_game_state()
 
 # Show instructions initially
 instructions = True
@@ -123,7 +134,7 @@ while True:
             # Add a mine, flag, or number if needed
             if gameState.game.is_mine((i, j)) and gameState.lost:
                 if (i, j) == gameState.losing_move:
-                    red_background = mine.copy() # just for size
+                    red_background = mine.copy()  # just for size
                     red_background.fill((255, 0, 0, 100))
                     screen.blit(red_background, rect)
                     screen.blit(mine, rect)
@@ -204,7 +215,7 @@ while True:
 
         # Reset game state
         elif resetButton.collidepoint(mouse):
-            gameState = GameState(height=config.height, width=config.width, mines=config.mines)
+            gameState = create_game_state()
             continue
 
         # User-made move
