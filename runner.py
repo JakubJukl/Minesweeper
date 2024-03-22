@@ -233,6 +233,9 @@ while True:
             gameState.flags.add(move)
             gameState.ai.flag_placed(move)
         else:
+            if (move in gameState.flags):
+                gameState.flags.remove(move)
+                gameState.ai.flag_removed(move)
             if gameState.game.is_mine(move):
                 gameState.lost = True
                 gameState.losing_move = move
